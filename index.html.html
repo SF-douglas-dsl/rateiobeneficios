@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Rateio Beneficios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:#f0f0f0}
+.wrap{max-width:980px;margin:0 auto;padding:2rem 1rem}
+h1{font-size:20px;font-weight:600;margin-bottom:1.5rem}
+.card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:1.25rem;margin-bottom:1rem}
+.ct{font-size:12px;font-weight:600;color:#888;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.75rem}
+.ubox{border:1.5px dashed #ccc;border-radius:8px;padding:.75rem;position:relative;cursor:pointer;transition:background .15s}
+.ubox:hover{background:#f9f9f9}
+.ubox label{font-size:13px;color:#555;cursor:pointer;display:block}
+.fn{font-size:11px;color:#16a34a;margin-top:4px;word-break:break-all;min-height:14px}
+.ubox input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.row{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:.6rem}
+.row label{font-size:13px;color:#555;min-width:130px}
+.row input{height:34px;border:1px solid #ddd;border-radius:6px;padding:0 10px;font-size:13px}
+.ptag{font-size:12px;padding:4px 10px;background:#f0f0f0;border-radius:6px;color:#555;font-style:italic}
+.colmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.5rem}
+.colmap>div{display:flex;flex-direction:column;gap:2px}
+.colmap label{font-size:12px;color:#666}
+.colmap select{height:32px;border:1px solid #ddd;border-radius:6px;padding:0 8px;font-size:12px}
+.btn{height:38px;padding:0 1.25rem;border:1px solid #ccc;border-radius:8px;background:#fff;color:#111;font-size:14px;font-weight:500;cursor:pointer}
+.btn:hover{background:#f0f0f0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-p{background:#111;color:#fff;border-color:#111}
+.btn-p:hover{background:#333}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1rem}
+.metric{background:#f5f5f5;border-radius:8px;padding:.75rem 1rem}
+.metric .lb{font-size:12px;color:#888;margin-bottom:4px}
+.metric .vl{font-size:22px;font-weight:600}
+.alert{border-radius:8px;padding:.5rem .75rem;font-size:13px;margin-bottom:.5rem}
+.aw{background:#fffbeb;border:1px solid #f59e0b;color:#92400e}
+.ae{background:#fef2f2;border:1px solid #ef4444;color:#991b1b}
+.as{background:#f0fdf4;border:1px solid #22c55e;color:#166534}
+.tw{overflow-x:auto;max-height:380px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{position:sticky;top:0;background:#f5f5f5;padding:7px 10px;text-align:left;font-weight:600;border-bottom:1px solid #ddd;white-space:nowrap}
+td{padding:5px 10px;border-bottom:1px solid #f0f0f0;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+tr:hover td{background:#fafafa}
+.te{background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600}
+.tr2{background:#dbeafe;color:#1e40af;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>⚙️ Rateio Beneficios</h1>
+
+<div class="card">
+  <div class="ct">1. Uploads</div>
+  <div class="grid4">
+    <div class="ubox"><label>Razão / NF <span style="color:red">*</span><div class="fn" id="fn-nf">nenhum arquivo</div></label><input type="file" id="f-nf" accept=".xlsx,.xls,.csv"></div>
+    <div class="ubox"><label>Benefícios (CPF+Valor) <span style="color:red">*</span><div class="fn" id="fn-ben">nenhum arquivo</div></label><input type="file" id="f-ben" accept=".xlsx,.xls,.csv"></div>
+    <div class="ubox"><label>Base com CPF (até 12) <span style="color:red">*</span><div class="fn" id="fn-b1">nenhum arquivo</div></label><input type="file" id="f-b1" accept=".xlsx,.xls,.csv" multiple></div>
+    <div class="ubox"><label>Base sem CPF (até 12) <span style="color:red">*</span><div class="fn" id="fn-b2">nenhum arquivo</div></label><input type="file" id="f-b2" accept=".xlsx,.xls,.csv" multiple></div>
+    <div class="ubox"><label>De-Para <span style="color:red">*</span><div class="fn" id="fn-dp">nenhum arquivo</div></label><input type="file" id="f-dp" accept=".xlsx,.xls"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ct">2. Parâmetros</div>
+  <div class="row"><label>Data do lançamento</label><input type="date" id="p-data" oninput="updatePreview()"></div>
+  <div class="row"><label>Solicitante (login)</label><input type="text" id="p-sol" placeholder="ex: douglas.leitao" style="width:260px"></div>
+  <div class="row"><label style="font-size:12px;color:#888">Tipo lançamento</label><span class="ptag" id="tipo-preview">RATEIO [conta gerencial] MM/AAAA</span></div>
+</div>
+
+<div id="sec-map" class="card hidden"><div class="ct">3. Mapeamento — Razão/NF</div><div class="colmap" id="map-nf"></div></div>
+<div id="sec-map-ben" class="card hidden"><div class="ct">Mapeamento — Benefícios</div><div class="colmap" id="map-ben"></div></div>
+
+
+<div style="margin-bottom:1rem">
+  <button class="btn btn-p" id="btn-run" disabled onclick="runRateio()">▶ Processar Rateio</button>
+</div>
+
+<div id="result-area" class="hidden">
+  <div class="card">
+    <div class="ct">Resultado</div>
+    <div class="metrics" id="metrics"></div>
+    <div id="alerts-area"></div>
+    <div style="margin-bottom:.75rem" id="dl-area"></div>
+    <div style="font-size:12px;color:#888;margin-bottom:.5rem" id="status-msg"></div>
+    <div class="tw"><table id="preview-table"></table></div>
+  </div>
+</div>
+</div>
+
+<script>
+const FILIAIS=[{"CODCOLIGADA": 1, "CODFILIAL": 1, "Key": 11, "Código Filial": 1001, "Nome Filial": "VGS"}, {"CODCOLIGADA": 1, "CODFILIAL": 2, "Key": 12, "Código Filial": 1002, "Nome Filial": "MGG"}, {"CODCOLIGADA": 1, "CODFILIAL": 3, "Key": 13, "Código Filial": 1003, "Nome Filial": "RPI"}, {"CODCOLIGADA": 1, "CODFILIAL": 5, "Key": 15, "Código Filial": 1005, "Nome Filial": "RPII"}, {"CODCOLIGADA": 1, "CODFILIAL": 10, "Key": 110, "Código Filial": 1010, "Nome Filial": "ARP"}, {"CODCOLIGADA": 1, "CODFILIAL": 11, "Key": 111, "Código Filial": 1011, "Nome Filial": "CORP"}, {"CODCOLIGADA": 1, "CODFILIAL": 12, "Key": 112, "Código Filial": 1012, "Nome Filial": "MLA"}, {"CODCOLIGADA": 1, "CODFILIAL": 13, "Key": 113, "Código Filial": 1013, "Nome Filial": "LDNI"}, {"CODCOLIGADA": 1, "CODFILIAL": 17, "Key": 117, "Código Filial": 1017, "Nome Filial": "CGD"}, {"CODCOLIGADA": 1, "CODFILIAL": 18, "Key": 118, "Código Filial": 1018, "Nome Filial": "CVDI"}, {"CODCOLIGADA": 1, "CODFILIAL": 19, "Key": 119, "Código Filial": 1019, "Nome Filial": "LDNII"}, {"CODCOLIGADA": 1, "CODFILIAL": 20, "Key": 120, "Código Filial": 1020, "Nome Filial": "RMSPI"}, {"CODCOLIGADA": 1, "CODFILIAL": 23, "Key": 123, "Código Filial": 1023, "Nome Filial": "CGB"}, {"CODCOLIGADA": 1, "CODFILIAL": 24, "Key": 124, "Código Filial": 1024, "Nome Filial": "MAO"}, {"CODCOLIGADA": 1, "CODFILIAL": 25, "Key": 125, "Código Filial": 1025, "Nome Filial": "CWBII"}, {"CODCOLIGADA": 1, "CODFILIAL": 26, "Key": 126, "Código Filial": 1026, "Nome Filial": "BEL"}, {"CODCOLIGADA": 1, "CODFILIAL": 27, "Key": 127, "Código Filial": 1027, "Nome Filial": "POA"}, {"CODCOLIGADA": 1, "CODFILIAL": 29, "Key": 129, "Código Filial": 1029, "Nome Filial": "CWBIII"}, {"CODCOLIGADA": 1, "CODFILIAL": 30, "Key": 130, "Código Filial": 1030, "Nome Filial": "ITA"}, {"CODCOLIGADA": 1, "CODFILIAL": 31, "Key": 131, "Código Filial": 1031, "Nome Filial": "POAII"}, {"CODCOLIGADA": 2, "CODFILIAL": 1, "Key": 21, "Código Filial": 2001, "Nome Filial": "CPK"}, {"CODCOLIGADA": 4, "CODFILIAL": 2, "Key": 42, "Código Filial": 4003, "Nome Filial": "MAQ ARM"}, {"CODCOLIGADA": 6, "CODFILIAL": 1, "Key": 61, "Código Filial": 6001, "Nome Filial": "CCV"}, {"CODCOLIGADA": 8, "CODFILIAL": 1, "Key": 81, "Código Filial": 8001, "Nome Filial": "RMSPII"}, {"CODCOLIGADA": 8, "CODFILIAL": 2, "Key": 82, "Código Filial": 8004, "Nome Filial": "RMRJ"}, {"CODCOLIGADA": 8, "CODFILIAL": 3, "Key": 83, "Código Filial": 8005, "Nome Filial": "FOR"}, {"CODCOLIGADA": 8, "CODFILIAL": 4, "Key": 84, "Código Filial": 8006, "Nome Filial": "REC"}, {"CODCOLIGADA": 8, "CODFILIAL": 9, "Key": 89, "Código Filial": 8009, "Nome Filial": "RMSPIV"}, {"CODCOLIGADA": 9, "CODFILIAL": 1, "Key": 91, "Código Filial": 9001, "Nome Filial": "SSA"}, {"CODCOLIGADA": 10, "CODFILIAL": 1, "Key": 101, "Código Filial": 10001, "Nome Filial": "BSB"}, {"CODCOLIGADA": 10, "CODFILIAL": 2, "Key": 102, "Código Filial": 10002, "Nome Filial": "CGH"}, {"CODCOLIGADA": 10, "CODFILIAL": 3, "Key": 103, "Código Filial": 10003, "Nome Filial": "GYN"}, {"CODCOLIGADA": 10, "CODFILIAL": 4, "Key": 104, "Código Filial": 10004, "Nome Filial": "UDI"}, {"CODCOLIGADA": 10, "CODFILIAL": 5, "Key": 105, "Código Filial": 10005, "Nome Filial": "UDI"}, {"CODCOLIGADA": 10, "CODFILIAL": 6, "Key": 106, "Código Filial": 10006, "Nome Filial": "GYN"}];
+const CONTAS=[{"Cod Conta": "40101010001", "Conta Contabil": "SALARIOS", "Conta Gerencial": "SALARIOS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010002", "Conta Contabil": "ADICIONAL INSALUBRIDADE", "Conta Gerencial": "ADICIONAL INSALUBRIDADE", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010003", "Conta Contabil": "ADICIONAL PERICULOSIDADE", "Conta Gerencial": "ADICIONAL PERICULOSIDADE", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010004", "Conta Contabil": "ADICIONAL NOTURNO", "Conta Gerencial": "ADICIONAL NOTURNO", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010005", "Conta Contabil": "HORA EXTRA", "Conta Gerencial": "HORA EXTRA", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010006", "Conta Contabil": "FERIAS", "Conta Gerencial": "FERIAS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010007", "Conta Contabil": "RESCISOES", "Conta Gerencial": "RESCISOES", "Sub Grupo": "RESCISOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010008", "Conta Contabil": "DECIMO TERCEIRO SALARIO", "Conta Gerencial": "DECIMO TERCEIRO SALARIO", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010009", "Conta Contabil": "DECIMO TERCEIRO SALARIO", "Conta Gerencial": "DECIMO TERCEIRO SALARIO", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010010", "Conta Contabil": "FERIAS", "Conta Gerencial": "FERIAS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010011", "Conta Contabil": "DIARIA / PERNOITE", "Conta Gerencial": "DIARIA / PERNOITE", "Sub Grupo": "DIARIAS", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40101010012", "Conta Contabil": "PROVISAO DE BONUS", "Conta Gerencial": "PROVISAO DE BONUS", "Sub Grupo": "BONUS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010013", "Conta Contabil": "ACORDOS TRABALHISTAS", "Conta Gerencial": "ACORDOS TRABALHISTAS", "Sub Grupo": "ACORDOS E CONTINGENCIAS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010014", "Conta Contabil": "PRO LABORE", "Conta Gerencial": "PRO LABORE", "Sub Grupo": "PRO LABORE", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010015", "Conta Contabil": "MAO DE OBRA NA OPERACAO TERCEIRIZADA", "Conta Gerencial": "MAO DE OBRA NA OPERACAO TERCEIRIZADA", "Sub Grupo": "MAO DE OBRA DE TERCEIROS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010016", "Conta Contabil": "FERIAS - EVENTO 1180", "Conta Gerencial": "FERIAS - EVENTO 1180", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010017", "Conta Contabil": "PROVISAO DE BANCO DE HORAS", "Conta Gerencial": "PROVISAO DE BANCO DE HORAS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010018", "Conta Contabil": "ESTAGIARIOS", "Conta Gerencial": "ESTAGIARIOS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010019", "Conta Contabil": "VANTAGEM DE PESSOAL", "Conta Gerencial": "ADICIONAL INSALUBRIDADE", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010020", "Conta Contabil": "INSS", "Conta Gerencial": "INSS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010021", "Conta Contabil": "FGTS", "Conta Gerencial": "FGTS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010022", "Conta Contabil": "INSS", "Conta Gerencial": "INSS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010023", "Conta Contabil": "FGTS", "Conta Gerencial": "FGTS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010024", "Conta Contabil": "BRINDES", "Conta Gerencial": "BRINDES", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010025", "Conta Contabil": "PREMIO PTS", "Conta Gerencial": "PREMIO PTS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101010026", "Conta Contabil": "SALARIO APRENDIZ", "Conta Gerencial": "SALARIO APRENDIZ", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101020001", "Conta Contabil": "INSS", "Conta Gerencial": "INSS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101020002", "Conta Contabil": "FGTS", "Conta Gerencial": "FGTS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101020003", "Conta Contabil": "FGTS MULTA RESCISORIA", "Conta Gerencial": "FGTS MULTA RESCISORIA", "Sub Grupo": "RESCISOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030002", "Conta Contabil": "VALE ALIMENTACAO", "Conta Gerencial": "VALE ALIMENTACAO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030003", "Conta Contabil": "PLR", "Conta Gerencial": "PLR", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030004", "Conta Contabil": "SEGURO DE VIDA", "Conta Gerencial": "SEGURO DE VIDA", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030005", "Conta Contabil": "ASSISTENCIA MEDICA", "Conta Gerencial": "ASSISTENCIA MEDICA", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030006", "Conta Contabil": "PREMIO DE PRODUTIVIDADE", "Conta Gerencial": "PREMIO DE PRODUTIVIDADE", "Sub Grupo": "PREMIO DE PRODUTIVIDADE", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030007", "Conta Contabil": "BONUS", "Conta Gerencial": "BONUS", "Sub Grupo": "BONUS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030008", "Conta Contabil": "ASSISTENCIA ODONTOLOGICA", "Conta Gerencial": "ASSISTENCIA ODONTOLOGICA", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030009", "Conta Contabil": "CUSTO COM TRANSPORTE", "Conta Gerencial": "TRANSPORTE COLABORADORES", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030010", "Conta Contabil": "VALE REFEICAO", "Conta Gerencial": "VALE REFEICAO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030011", "Conta Contabil": "VALE TRANSPORTE", "Conta Gerencial": "VALE TRANSPORTE", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40101030012", "Conta Contabil": "TRANSPORTE FRETADO", "Conta Gerencial": "TRANSPORTE FRETADO", "Sub Grupo": "CUSTO COM TRANSPORTES", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40101030013", "Conta Contabil": "MEDICAMENTOS", "Conta Gerencial": "MEDICAMENTOS", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102010001", "Conta Contabil": "ENERGIA ELETRICA", "Conta Gerencial": "ENERGIA ELETRICA", "Sub Grupo": "ENERGIA ELETRICA", "Grupo": "ENERGIA ELETRICA"}, {"Cod Conta": "40102010002", "Conta Contabil": "AGUA E ESGOTO", "Conta Gerencial": "AGUA E ESGOTO", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102010003", "Conta Contabil": "DESPESAS COM TELEFONIA", "Conta Gerencial": "DESPESAS COM TELEFONIA", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102010004", "Conta Contabil": "DESPESAS COM INTERNET", "Conta Gerencial": "DESPESAS COM INTERNET", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102010005", "Conta Contabil": "TELEFONIA MOVEL", "Conta Gerencial": "TELEFONIA MOVEL", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102020001", "Conta Contabil": "MATERIAIS DE EMBALAGEM", "Conta Gerencial": "MATERIAIS DE EMBALAGEM", "Sub Grupo": "MATERIAIS DE EMBALAGEM", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102020002", "Conta Contabil": "STRECH", "Conta Gerencial": "STRECH", "Sub Grupo": "MATERIAIS DE EMBALAGEM", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102030001", "Conta Contabil": "ALUGUEL DE EQUIPAMENTOS", "Conta Gerencial": "ALUGUEL DE EQUIPAMENTOS", "Sub Grupo": "ALUGUEIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102030002", "Conta Contabil": "ALUGUEL DE IMOVEIS", "Conta Gerencial": "ALUGUEL DE IMOVEIS", "Sub Grupo": "ALUGUEL DE IMOVEIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102030003", "Conta Contabil": "LOCACAO DE BENS", "Conta Gerencial": "LOCACAO DE BENS", "Sub Grupo": "ALUGUEIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102040001", "Conta Contabil": "MANUTENCAO DO ARMAZEM", "Conta Gerencial": "MANUTENCAO DO ARMAZEM", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40102040002", "Conta Contabil": "MANUTENCAO DE VEICULOS", "Conta Gerencial": "MANUTENCAO DE VEICULOS", "Sub Grupo": "MANUTENCAO DE FROTA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102040004", "Conta Contabil": "MANUTENCAO DE MAQUINAS E EQUIPAMENTOS", "Conta Gerencial": "MANUTENCAO DE MAQUINAS E EQUIPAMENTOS", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40102040005", "Conta Contabil": "MANUTENCAO E AQUISICAO DE PNEUS DE CAMIN", "Conta Gerencial": "MANUTENCAO E AQUISICAO DE PNEUS DE CAMIN", "Sub Grupo": "MANUTENCAO DE FROTA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102040006", "Conta Contabil": "MANUTENCAO DE MAQUINAS DE MOVIMENTACAO", "Conta Gerencial": "MANUTENCAO DE MAQUINAS DE MOVIMENTACAO", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40102040007", "Conta Contabil": "MANUTENCAO ADMINISTRATIVO", "Conta Gerencial": "MANUTENCAO ADMINISTRATIVO", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40102040008", "Conta Contabil": "MANUTENCAO E LOCACAO DE SOFTWARES", "Conta Gerencial": "MANUTENCAO E LOCACAO DE SOFTWARES", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102040009", "Conta Contabil": "FRETES E GUINCHOS FROTA", "Conta Gerencial": "FRETES E GUINCHOS FROTA", "Sub Grupo": "MANUTENCAO DE FROTA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102040010", "Conta Contabil": "PECAS E GASES PARA FROTA", "Conta Gerencial": "PECAS E GASES PARA FROTA", "Sub Grupo": "MANUTENCAO DE FROTA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102040011", "Conta Contabil": "LUBRIFICANTES PARA FROTA", "Conta Gerencial": "LUBRIFICANTES PARA FROTA", "Sub Grupo": "MANUTENCAO DE FROTA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102040012", "Conta Contabil": "REVISOES DA FROTA", "Conta Gerencial": "REVISOES DA FROTA", "Sub Grupo": "MANUTENCAO DE FROTA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102040013", "Conta Contabil": "LAVAGEM DE CAMINHOES FROTA", "Conta Gerencial": "LAVAGEM DE CAMINHOES FROTA", "Sub Grupo": "MANUTENCAO DE FROTA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102040016", "Conta Contabil": "MAQUINAS E EQUIPAMENTOS PEQ. VAL.", "Conta Gerencial": "MAQUINAS E EQUIPAMENTOS PEQ. VAL.", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102040017", "Conta Contabil": "EQUIPAMENTOS DE SEGURANÇA", "Conta Gerencial": "EQUIPAMENTOS DE SEGURANÇA", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102040018", "Conta Contabil": "MANUTENÇÃO DE CONTAINERS", "Conta Gerencial": "MANUTENÇÃO DE CONTAINERS", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40102040019", "Conta Contabil": "MANUTENCAO DE VEICULOS ADM", "Conta Gerencial": "MANUTENCAO DE VEICULOS ADM", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40102050001", "Conta Contabil": "SEGURO PATRIMONIAL", "Conta Gerencial": "SEGURO PATRIMONIAL", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102050002", "Conta Contabil": "SEGURO DE FROTA", "Conta Gerencial": "SEGURO DE FROTA", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102050003", "Conta Contabil": "SEGURO DE CARGA", "Conta Gerencial": "SEGURO DE CARGA", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102050004", "Conta Contabil": "SEGURO DE MAQUINAS E EQUIPAMENTOS", "Conta Gerencial": "SEGURO DE MAQUINAS E EQUIPAMENTOS", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102050005", "Conta Contabil": "SEGURO DE MERCADORIAS", "Conta Gerencial": "SEGURO DE MERCADORIAS", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102050006", "Conta Contabil": "SEGUROS EM GERAL", "Conta Gerencial": "SEGUROS EM GERAL", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102050007", "Conta Contabil": "SEGURO DE VEICULOS", "Conta Gerencial": "SEGURO DE VEICULOS", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102060001", "Conta Contabil": "AVARIAS COM ESTOQUE DE TERCEIROS", "Conta Gerencial": "AVARIAS COM ESTOQUE DE TERCEIROS", "Sub Grupo": "PERDAS E AVARIAS", "Grupo": "PERDAS E AVARIAS"}, {"Cod Conta": "40102060002", "Conta Contabil": "AVARIAS COM ESTOQUE DE TERCEIROS FRETES", "Conta Gerencial": "AVARIAS COM ESTOQUE DE TERCEIROS FRETES", "Sub Grupo": "PERDAS E AVARIAS", "Grupo": "PERDAS E AVARIAS"}, {"Cod Conta": "40102060003", "Conta Contabil": "PROVISAO DE AVARIAS", "Conta Gerencial": "AVARIAS COM ESTOQUE DE TERCEIROS", "Sub Grupo": "PERDAS E AVARIAS", "Grupo": "PERDAS E AVARIAS"}, {"Cod Conta": "40102060004", "Conta Contabil": "OUTRAS PROVISOES", "Conta Gerencial": "OUTRAS PROVISOES", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102070001", "Conta Contabil": "ETANOL DA CAMARA FRIA", "Conta Gerencial": "ETANOL DA CAMARA FRIA", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102070002", "Conta Contabil": "GLP DE EMPILHADEIRA", "Conta Gerencial": "GLP DE EMPILHADEIRA", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102070003", "Conta Contabil": "LUBRIFICANTES DE MAQUINAS E EQUIPAMENTOS", "Conta Gerencial": "LUBRIFICANTES DE MAQUINAS E EQUIPAMENTOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102070004", "Conta Contabil": "COMBUSTIVEL E LUBRIFICANTES VEICULOS LEV", "Conta Gerencial": "COMBUSTIVEL E LUBRIFICANTES VEICULOS LEV", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102070005", "Conta Contabil": "COMBUSTIVEL E LUBRIFICANTES DE CAMINHOES", "Conta Gerencial": "COMBUSTIVEL E LUBRIFICANTES DE CAMINHOES", "Sub Grupo": "COMBUSTIVEL", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102070006", "Conta Contabil": "CUSTO DE TRANSPORTE - COMBUSTIVEL", "Conta Gerencial": "CUSTO DE TRANSPORTE - COMBUSTIVEL", "Sub Grupo": "COMBUSTIVEL", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102080001", "Conta Contabil": "ASSESSORIA CIVIL E TECNICA", "Conta Gerencial": "ASSESSORIA CIVIL E TECNICA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080002", "Conta Contabil": "RECRUTAMENTO E SELECAO", "Conta Gerencial": "RECRUTAMENTO E SELECAO", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080004", "Conta Contabil": "MEDICINA DO TRABALHO", "Conta Gerencial": "MEDICINA DO TRABALHO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102080005", "Conta Contabil": "AUDITORIAS E CONSULTORIAS", "Conta Gerencial": "AUDITORIAS E CONSULTORIAS", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080006", "Conta Contabil": "CONTROLE DE PRAGAS E DETETIZACAO", "Conta Gerencial": "CONTROLE DE PRAGAS E DETETIZACAO", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080007", "Conta Contabil": "RASTREAMENTO", "Conta Gerencial": "RASTREAMENTO", "Sub Grupo": "RASTREAMENTO", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102080008", "Conta Contabil": "FRETE SUBCONTRATADO", "Conta Gerencial": "FRETE SUBCONTRATADO", "Sub Grupo": "FRETE SUBCONTRATADO", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102080009", "Conta Contabil": "FRETES E CARRETOS", "Conta Gerencial": "FRETES E CARRETOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102080010", "Conta Contabil": "TREINAMENTO E DESENVOLVIMENTO", "Conta Gerencial": "TREINAMENTO E DESENVOLVIMENTO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102080011", "Conta Contabil": "LAVANDERIA", "Conta Gerencial": "LAVANDERIA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080012", "Conta Contabil": "SEGURANCA E VIGILANCIA", "Conta Gerencial": "SEGURANCA E VIGILANCIA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080013", "Conta Contabil": "ASSESSORIA JURIDICA", "Conta Gerencial": "ASSESSORIA JURIDICA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080014", "Conta Contabil": "MAO DE OBRA TERCEIRIZADA OUTROS", "Conta Gerencial": "MAO DE OBRA TERCEIRIZADA OUTROS", "Sub Grupo": "MAO DE OBRA DE TERCEIROS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102080015", "Conta Contabil": "SERVICOS PRESTADOS PJ", "Conta Gerencial": "SERVICOS PRESTADOS PJ", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080016", "Conta Contabil": "SERVICOS LIMPEZA E JARDINAGEM", "Conta Gerencial": "SERVICOS LIMPEZA E JARDINAGEM", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080017", "Conta Contabil": "ESCOLTA ARMADA", "Conta Gerencial": "ESCOLTA ARMADA", "Sub Grupo": "ESCOLTA ARMADA", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102080018", "Conta Contabil": "SERVIÇOS DE CONSERTOS E REPAROS", "Conta Gerencial": "SERVIÇOS DE CONSERTOS E REPAROS", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102080019", "Conta Contabil": "MANUTENCAO DE EQUIPAMENTOS DE TI", "Conta Gerencial": "MANUTENCAO DE EQUIPAMENTOS DE TI", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40102090001", "Conta Contabil": "MATERIAL DE ASSEPSIA", "Conta Gerencial": "MATERIAL DE ASSEPSIA", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090002", "Conta Contabil": "PEDAGIO", "Conta Gerencial": "PEDAGIO", "Sub Grupo": "PEDAGIO", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102090003", "Conta Contabil": "IPVA/LICENCIAMENTO", "Conta Gerencial": "IPVA/LICENCIAMENTO", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090004", "Conta Contabil": "DESPESA COM AMONIA / GAS FREON", "Conta Gerencial": "DESPESA COM AMONIA / GAS FREON", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090005", "Conta Contabil": "IPTU", "Conta Gerencial": "IPTU", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090006", "Conta Contabil": "MATERIAL DE ESCRITORIO", "Conta Gerencial": "MATERIAL DE ESCRITORIO", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090007", "Conta Contabil": "CERTIDOES E TAXAS", "Conta Gerencial": "CERTIDOES E TAXAS", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090008", "Conta Contabil": "IMPRESSOS/COPIAS/ENCADERNACAO", "Conta Gerencial": "IMPRESSOS/COPIAS/ENCADERNACAO", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090009", "Conta Contabil": "CORREIOS", "Conta Gerencial": "CORREIOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090010", "Conta Contabil": "MATERIAL LIMP, COPA COZINHA", "Conta Gerencial": "MATERIAL LIMP, COPA COZINHA", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090011", "Conta Contabil": "CUSTOS COM INTERNET", "Conta Gerencial": "CUSTOS COM INTERNET", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090012", "Conta Contabil": "MULTAS DE TRANSITO", "Conta Gerencial": "MULTAS DE TRANSITO", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090013", "Conta Contabil": "BENS DE PEQUENO VALOR", "Conta Gerencial": "BENS DE PEQUENO VALOR", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090014", "Conta Contabil": "MULTAS FISCAIS", "Conta Gerencial": "MULTAS FISCAIS", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090015", "Conta Contabil": "ASSINATURA JORNAIS / REVISTAS / ELETRONI", "Conta Gerencial": "ASSINATURA JORNAIS / REVISTAS / ELETRONI", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102090016", "Conta Contabil": "INDENIZACOES A TERCEIROS", "Conta Gerencial": "INDENIZACOES A TERCEIROS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090017", "Conta Contabil": "AUXILIO FUNERAL", "Conta Gerencial": "AUXILIO FUNERAL", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102090018", "Conta Contabil": "PERDAS E CREDITOS INCOBRAVEIS", "Conta Gerencial": "PERDAS E CREDITOS INCOBRAVEIS", "Sub Grupo": "PROVISAO PARA PERDAS DE CLIENTES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090019", "Conta Contabil": "CUSTO DESCARGAS", "Conta Gerencial": "CUSTO DESCARGAS", "Sub Grupo": "DESCARGAS", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40102090020", "Conta Contabil": "DONATIVOS E CONTRIBUICOES", "Conta Gerencial": "DONATIVOS E CONTRIBUICOES", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090021", "Conta Contabil": "ICMS DIFAL", "Conta Gerencial": "ICMS DIFAL", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090022", "Conta Contabil": "PROV IPTU", "Conta Gerencial": "PROV IPTU", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090023", "Conta Contabil": "DESPESAS DIVERSAS", "Conta Gerencial": "DESPESAS DIVERSAS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102090024", "Conta Contabil": "LAUDOS", "Conta Gerencial": "LAUDOS", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40102100001", "Conta Contabil": "UNIFORMES/EPI", "Conta Gerencial": "UNIFORMES/EPI", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100002", "Conta Contabil": "CUSTO COM ALIMENTACAO", "Conta Gerencial": "ALIMENTACAO COLABORADORES", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102100003", "Conta Contabil": "DESPESAS VIAGEM - REPESENTACOES", "Conta Gerencial": "DESPESAS VIAGEM - REPESENTACOES", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100004", "Conta Contabil": "DESPESAS VIAGEM - KM DESLOCAMENTO", "Conta Gerencial": "DESPESAS VIAGEM - KM DESLOCAMENTO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100005", "Conta Contabil": "DESPESAS VIAGEM - OUTROS", "Conta Gerencial": "DESPESAS VIAGEM - OUTROS", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100006", "Conta Contabil": "DESPESAS VIAGEM - HOSPEDAGEM / ESTADIA", "Conta Gerencial": "DESPESAS VIAGEM - HOSPEDAGEM / ESTADIA", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100007", "Conta Contabil": "DESPESAS VIAGEM - LOCACAO VEICULO", "Conta Gerencial": "DESPESAS VIAGEM - LOCACAO VEICULO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100008", "Conta Contabil": "DESPESAS VIAGEM - ALIMENTACAO", "Conta Gerencial": "DESPESAS VIAGEM - ALIMENTACAO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100009", "Conta Contabil": "DESPESAS VIAGEM - ABASTECIMENTO", "Conta Gerencial": "DESPESAS VIAGEM - ABASTECIMENTO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100010", "Conta Contabil": "CONTRIBUICAO SINDICAL PATRONAL", "Conta Gerencial": "CONTRIBUICAO SINDICAL PATRONAL", "Sub Grupo": "CONTRIBUICOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102100011", "Conta Contabil": "CONTRIBUICAO CONFEDERATIVA", "Conta Gerencial": "CONTRIBUICAO CONFEDERATIVA", "Sub Grupo": "CONTRIBUICOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102100012", "Conta Contabil": "DESPESAS VIAGEM - PEDAGIO", "Conta Gerencial": "DESPESAS VIAGEM - PEDAGIO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100013", "Conta Contabil": "DESPESAS VIAGEM - TAXI", "Conta Gerencial": "DESPESAS VIAGEM - TAXI", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100014", "Conta Contabil": "DESPESAS VIAGEM - VIAGEM AEREA", "Conta Gerencial": "DESPESAS VIAGEM - VIAGEM AEREA", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100015", "Conta Contabil": "DESPESAS COM EVENTOS", "Conta Gerencial": "DESPESAS COM EVENTOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100016", "Conta Contabil": "CONFRATERNIZACOES", "Conta Gerencial": "CONFRATERNIZACOES", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100017", "Conta Contabil": "DESPESAS VIAGEM - REPESENTACOES", "Conta Gerencial": "DESPESAS VIAGEM - REPESENTACOES", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100019", "Conta Contabil": "CONTRIBUICAO ASSIST PATRONAL", "Conta Gerencial": "CONTRIBUICAO ASSIST PATRONAL", "Sub Grupo": "CONTRIBUICOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102100020", "Conta Contabil": "DESPESAS VIAGEM - ESTACIONAMENTO", "Conta Gerencial": "DESPESAS VIAGEM - ESTACIONAMENTO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102100021", "Conta Contabil": "AVARIAS DE VEICULO", "Conta Gerencial": "AVARIAS DE VEICULO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102110001", "Conta Contabil": "BAIXA DE ATIVOS OBSOLETOS", "Conta Gerencial": "BAIXA DE ATIVOS OBSOLETOS", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102110002", "Conta Contabil": "BAIXA VENDA ATIVO IMOBILIZADO", "Conta Gerencial": "BAIXA VENDA ATIVO IMOBILIZADO", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40102120001", "Conta Contabil": "DEPRECIACAO", "Conta Gerencial": "DEPRECIACAO", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40102120002", "Conta Contabil": "AMORTIZACAO", "Conta Gerencial": "AMORTIZACAO", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40102120003", "Conta Contabil": "DEPRECIACAO ARRENDAMENTO IFRS16", "Conta Gerencial": "DEPRECIACAO ARRENDAMENTO IFRS16", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40102120004", "Conta Contabil": "DEPRECIACAO MAIS VALIA", "Conta Gerencial": "DEPRECIACAO MAIS VALIA", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40102120005", "Conta Contabil": "AMORTIZACAO MAIS VALIA", "Conta Gerencial": "AMORTIZACAO MAIS VALIA", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40102130001", "Conta Contabil": "DEPRECIACAO (AAP)", "Conta Gerencial": "DEPRECIACAO (AAP)", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40102140001", "Conta Contabil": "CUSTOS COM CONTINGENCIAS CIVEL", "Conta Gerencial": "CUSTOS COM CONTINGENCIAS CIVEL", "Sub Grupo": "ACORDOS E CONTINGENCIAS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40102140002", "Conta Contabil": "CUSTO COM CONTINGENCIAS TRIBUTARIA", "Conta Gerencial": "CUSTO COM CONTINGENCIAS TRIBUTARIA", "Sub Grupo": "ACORDOS E CONTINGENCIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40201010001", "Conta Contabil": "SALARIOS", "Conta Gerencial": "SALARIOS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010002", "Conta Contabil": "ADICIONAL INSALUBRIDADE", "Conta Gerencial": "ADICIONAL INSALUBRIDADE", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010003", "Conta Contabil": "HORA EXTRA", "Conta Gerencial": "HORA EXTRA", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010004", "Conta Contabil": "ADICIONAL NOTURNO", "Conta Gerencial": "ADICIONAL NOTURNO", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010005", "Conta Contabil": "FERIAS", "Conta Gerencial": "FERIAS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010006", "Conta Contabil": "RESCISOES", "Conta Gerencial": "RESCISOES", "Sub Grupo": "RESCISOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010007", "Conta Contabil": "DECIMO TERCEIRO SALARIO", "Conta Gerencial": "DECIMO TERCEIRO SALARIO", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010008", "Conta Contabil": "PRO LABORE", "Conta Gerencial": "PRO LABORE", "Sub Grupo": "PRO LABORE", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010009", "Conta Contabil": "ACORDOS TRABALHISTAS", "Conta Gerencial": "ACORDOS TRABALHISTAS", "Sub Grupo": "ACORDOS E CONTINGENCIAS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010010", "Conta Contabil": "DESPESA COM TRANSPORTE", "Conta Gerencial": "TRANSPORTE COLABORADORES", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010011", "Conta Contabil": "DECIMO TERCEIRO SALARIO", "Conta Gerencial": "DECIMO TERCEIRO SALARIO", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010012", "Conta Contabil": "FERIAS", "Conta Gerencial": "FERIAS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010013", "Conta Contabil": "PROVISAO DE BONUS", "Conta Gerencial": "PROVISAO DE BONUS", "Sub Grupo": "BONUS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010014", "Conta Contabil": "ADICIONAL PERICULOSIDADE", "Conta Gerencial": "ADICIONAL PERICULOSIDADE", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010015", "Conta Contabil": "FERIAS - EVENTO 1180", "Conta Gerencial": "FERIAS - EVENTO 1180", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010016", "Conta Contabil": "PROVISAO DE BANCO DE HORAS", "Conta Gerencial": "PROVISAO DE BANCO DE HORAS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010017", "Conta Contabil": "MAO DE OBRA TERCEIRIZADA", "Conta Gerencial": "MAO DE OBRA TERCEIRIZADA", "Sub Grupo": "MAO DE OBRA DE TERCEIROS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010018", "Conta Contabil": "ESTAGIARIOS", "Conta Gerencial": "ESTAGIARIOS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010019", "Conta Contabil": "VANTAGEM DE PESSOAL", "Conta Gerencial": "ADICIONAL INSALUBRIDADE", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010020", "Conta Contabil": "INSS", "Conta Gerencial": "INSS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010021", "Conta Contabil": "FGTS", "Conta Gerencial": "FGTS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010022", "Conta Contabil": "INSS", "Conta Gerencial": "INSS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010023", "Conta Contabil": "FGTS", "Conta Gerencial": "FGTS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010024", "Conta Contabil": "SALARIO APRENDIZ", "Conta Gerencial": "SALARIO APRENDIZ", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010025", "Conta Contabil": "BRINDES", "Conta Gerencial": "BRINDES", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201010026", "Conta Contabil": "PREMIO PTS", "Conta Gerencial": "PREMIO PTS", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201020001", "Conta Contabil": "INSS", "Conta Gerencial": "INSS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201020002", "Conta Contabil": "FGTS", "Conta Gerencial": "FGTS", "Sub Grupo": "ENCARGOS SOCIAIS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201020003", "Conta Contabil": "FGTS MULTA RESCISORIA", "Conta Gerencial": "FGTS MULTA RESCISORIA", "Sub Grupo": "RESCISOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030002", "Conta Contabil": "VALE ALIMENTACAO", "Conta Gerencial": "VALE ALIMENTACAO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030003", "Conta Contabil": "PLR", "Conta Gerencial": "PLR", "Sub Grupo": "SALARIOS E ORDENADOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030004", "Conta Contabil": "SEGURO DE VIDA", "Conta Gerencial": "SEGURO DE VIDA", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030005", "Conta Contabil": "ASSISTENCIA MEDICA", "Conta Gerencial": "ASSISTENCIA MEDICA", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030006", "Conta Contabil": "PREMIO DE PRODUTIVIDADE", "Conta Gerencial": "PREMIO DE PRODUTIVIDADE", "Sub Grupo": "PREMIO DE PRODUTIVIDADE", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030007", "Conta Contabil": "BONUS", "Conta Gerencial": "BONUS", "Sub Grupo": "BONUS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030008", "Conta Contabil": "ASSISTENCIA ODONTOLOGICA", "Conta Gerencial": "ASSISTENCIA ODONTOLOGICA", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030009", "Conta Contabil": "VALE REFEICAO", "Conta Gerencial": "VALE REFEICAO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030010", "Conta Contabil": "VALE TRANSPORTE", "Conta Gerencial": "VALE TRANSPORTE", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030011", "Conta Contabil": "TRANSPORTE FRETADO", "Conta Gerencial": "TRANSPORTE FRETADO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40201030012", "Conta Contabil": "MEDICAMENTOS", "Conta Gerencial": "MEDICAMENTOS", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40202010001", "Conta Contabil": "AGUA E ESGOTO", "Conta Gerencial": "AGUA E ESGOTO", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202010002", "Conta Contabil": "ENERGIA ELETRICA", "Conta Gerencial": "ENERGIA ELETRICA", "Sub Grupo": "ENERGIA ELETRICA", "Grupo": "ENERGIA ELETRICA"}, {"Cod Conta": "40202010003", "Conta Contabil": "DESPESAS COM INTERNET", "Conta Gerencial": "DESPESAS COM INTERNET", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202010004", "Conta Contabil": "DESPESAS COM TELEFONIA", "Conta Gerencial": "DESPESAS COM TELEFONIA", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202010005", "Conta Contabil": "TELEFONIA MOVEL", "Conta Gerencial": "TELEFONIA MOVEL", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202030001", "Conta Contabil": "ALUGUEL DE IMOVEIS", "Conta Gerencial": "ALUGUEL DE IMOVEIS", "Sub Grupo": "ALUGUEL DE IMOVEIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202030002", "Conta Contabil": "LOCACAO DE BENS", "Conta Gerencial": "LOCACAO DE BENS", "Sub Grupo": "ALUGUEIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202040001", "Conta Contabil": "MANUTENCAO ADMINISTRATIVO", "Conta Gerencial": "MANUTENCAO ADMINISTRATIVO", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40202040002", "Conta Contabil": "MANUTENCAO DE VEICULOS ADM", "Conta Gerencial": "MANUTENCAO DE VEICULOS ADM", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40202040003", "Conta Contabil": "MANUTENCAO PNEUS DE VEICULOS ADM", "Conta Gerencial": "MANUTENCAO PNEUS DE VEICULOS ADM", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40202040004", "Conta Contabil": "MANUTENCAO E LOCACAO DE SOFTWARES", "Conta Gerencial": "MANUTENCAO E LOCACAO DE SOFTWARES", "Sub Grupo": "DESPESAS DE COMUNICACAO E INFORMACAO", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202050001", "Conta Contabil": "SEGUROS EM GERAL", "Conta Gerencial": "SEGUROS EM GERAL", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202050002", "Conta Contabil": "SEGURO DE VEICULOS", "Conta Gerencial": "SEGURO DE VEICULOS", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202050003", "Conta Contabil": "SEGURO PATRIMONIAL", "Conta Gerencial": "SEGURO PATRIMONIAL", "Sub Grupo": "SEGUROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202060001", "Conta Contabil": "CERTIDOES E TAXAS", "Conta Gerencial": "CERTIDOES E TAXAS", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202060002", "Conta Contabil": "IPTU", "Conta Gerencial": "IPTU", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202060003", "Conta Contabil": "IPVA/LICENCIAMENTO", "Conta Gerencial": "IPVA/LICENCIAMENTO", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202060004", "Conta Contabil": "MULTAS FISCAIS", "Conta Gerencial": "MULTAS FISCAIS", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202060005", "Conta Contabil": "MULTAS DE TRANSITO", "Conta Gerencial": "MULTAS DE TRANSITO", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202060006", "Conta Contabil": "ICMS DIFAL", "Conta Gerencial": "ICMS DIFAL", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202080001", "Conta Contabil": "RECRUTAMENTO E SELECAO", "Conta Gerencial": "RECRUTAMENTO E SELECAO", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080002", "Conta Contabil": "FRETES E CARRETOS", "Conta Gerencial": "FRETES E CARRETOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202080003", "Conta Contabil": "ASSESSORIA CIVIL E TECNICA", "Conta Gerencial": "ASSESSORIA CIVIL E TECNICA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080004", "Conta Contabil": "ASSESSORIA JURIDICA", "Conta Gerencial": "ASSESSORIA JURIDICA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080005", "Conta Contabil": "ASSESSORIA CONTABIL", "Conta Gerencial": "ASSESSORIA CONTABIL", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080006", "Conta Contabil": "MEDICINA DO TRABALHO", "Conta Gerencial": "MEDICINA DO TRABALHO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40202080007", "Conta Contabil": "AUDITORIAS E CONSULTORIAS", "Conta Gerencial": "AUDITORIAS E CONSULTORIAS", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080008", "Conta Contabil": "CONTROLE DE PRAGAS E DETETIZACAO", "Conta Gerencial": "CONTROLE DE PRAGAS E DETETIZACAO", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080009", "Conta Contabil": "SEGURANCA E VIGILANCIA", "Conta Gerencial": "SEGURANCA E VIGILANCIA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080010", "Conta Contabil": "TREINAMENTO E DESENVOLVIMENTO", "Conta Gerencial": "TREINAMENTO E DESENVOLVIMENTO", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40202080011", "Conta Contabil": "SERVICOS PRESTADOS PJ", "Conta Gerencial": "SERVICOS PRESTADOS PJ", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080012", "Conta Contabil": "SERVICOS LIMPEZA E JARDINAGEM", "Conta Gerencial": "SERVICOS LIMPEZA E JARDINAGEM", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080013", "Conta Contabil": "SERVIÇOS DE CONSERTOS E REPAROS", "Conta Gerencial": "SERVIÇOS DE CONSERTOS E REPAROS", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202080014", "Conta Contabil": "MANUTENCAO DE EQUIPAMENTOS DE TI", "Conta Gerencial": "MANUTENCAO DE EQUIPAMENTOS DE TI", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40202090001", "Conta Contabil": "ASSINATURA JORNAIS / REVISTAS / ELETRONI", "Conta Gerencial": "ASSINATURA JORNAIS / REVISTAS / ELETRONI", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40202090002", "Conta Contabil": "BENS DE PEQUENO VALOR", "Conta Gerencial": "BENS DE PEQUENO VALOR", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202090003", "Conta Contabil": "COMBUSTIVEL E LUBRIFICANTES VEICULOS LEV", "Conta Gerencial": "COMBUSTIVEL E LUBRIFICANTES VEICULOS LEV", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202090004", "Conta Contabil": "CORREIOS", "Conta Gerencial": "CORREIOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202090005", "Conta Contabil": "IMPRESSOS/COPIAS/ENCADERNACAO", "Conta Gerencial": "IMPRESSOS/COPIAS/ENCADERNACAO", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202090006", "Conta Contabil": "MATERIAL LIMP, COPA COZINHA", "Conta Gerencial": "MATERIAL LIMP, COPA COZINHA", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202090007", "Conta Contabil": "MATERIAL DE ESCRITORIO", "Conta Gerencial": "MATERIAL DE ESCRITORIO", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202090008", "Conta Contabil": "PEDAGIO", "Conta Gerencial": "PEDAGIO", "Sub Grupo": "PEDAGIO", "Grupo": "CUSTO COM TRANSPORTES"}, {"Cod Conta": "40202090009", "Conta Contabil": "INDENIZACOES A TERCEIROS", "Conta Gerencial": "INDENIZACOES A TERCEIROS", "Sub Grupo": "MANUTENCAO", "Grupo": "MANUTENCAO"}, {"Cod Conta": "40202100001", "Conta Contabil": "CONTRIBUICAO ASSIST PATRONAL", "Conta Gerencial": "CONTRIBUICAO ASSIST PATRONAL", "Sub Grupo": "CONTRIBUICOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40202100002", "Conta Contabil": "CONTRIBUICAO SINDICAL PATRONAL", "Conta Gerencial": "CONTRIBUICAO SINDICAL PATRONAL", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100003", "Conta Contabil": "CONTRIBUICAO DE CLASSE", "Conta Gerencial": "CONTRIBUICAO DE CLASSE", "Sub Grupo": "DESPESAS TRIBUTARIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100004", "Conta Contabil": "DESPESA COM VIAGENS", "Conta Gerencial": "DESPESA COM VIAGENS", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100005", "Conta Contabil": "DESPESAS COM EVENTOS", "Conta Gerencial": "DESPESAS COM EVENTOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100006", "Conta Contabil": "UNIFORMES/EPI", "Conta Gerencial": "UNIFORMES/EPI", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100007", "Conta Contabil": "CONFRATERNIZACOES", "Conta Gerencial": "CONFRATERNIZACOES", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100008", "Conta Contabil": "DESPESAS COM ALIMENTACAO", "Conta Gerencial": "ALIMENTACAO COLABORADORES", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40202100009", "Conta Contabil": "DESPESAS VIAGEM - ALIMENTACAO", "Conta Gerencial": "DESPESAS VIAGEM - ALIMENTACAO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100010", "Conta Contabil": "DESPESAS VIAGEM - ABASTECIMENTO", "Conta Gerencial": "DESPESAS VIAGEM - ABASTECIMENTO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100011", "Conta Contabil": "DESPESAS VIAGEM - HOSPEDAGEM / ESTADIA", "Conta Gerencial": "DESPESAS VIAGEM - HOSPEDAGEM / ESTADIA", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100012", "Conta Contabil": "DESPESAS VIAGEM - PEDAGIO", "Conta Gerencial": "DESPESAS VIAGEM - PEDAGIO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100013", "Conta Contabil": "DESPESAS VIAGEM - VIAGEM AEREA", "Conta Gerencial": "DESPESAS VIAGEM - VIAGEM AEREA", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100014", "Conta Contabil": "DESPESAS VIAGEM - REPESENTACOES", "Conta Gerencial": "DESPESAS VIAGEM - REPESENTACOES", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100015", "Conta Contabil": "DESPESAS VIAGEM - TAXI", "Conta Gerencial": "DESPESAS VIAGEM - TAXI", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100016", "Conta Contabil": "DESPESAS VIAGEM - OUTROS", "Conta Gerencial": "DESPESAS VIAGEM - OUTROS", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100017", "Conta Contabil": "DESPESAS VIAGEM - LOCACAO VEICULO", "Conta Gerencial": "DESPESAS VIAGEM - LOCACAO VEICULO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100018", "Conta Contabil": "DESPESAS VIAGEM - KM DESLOCAMENTO", "Conta Gerencial": "DESPESAS VIAGEM - KM DESLOCAMENTO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100019", "Conta Contabil": "CONTRIBUICAO CONFEDERATIVA", "Conta Gerencial": "CONTRIBUICAO CONFEDERATIVA", "Sub Grupo": "CONTRIBUICOES", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40202100020", "Conta Contabil": "AUXILIO FUNERAL", "Conta Gerencial": "AUXILIO FUNERAL", "Sub Grupo": "BENEFICIOS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40202100021", "Conta Contabil": "DESPESAS VIAGEM - ESTACIONAMENTO", "Conta Gerencial": "DESPESAS VIAGEM - ESTACIONAMENTO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202100022", "Conta Contabil": "AVARIAS DE VEICULO", "Conta Gerencial": "AVARIAS DE VEICULO", "Sub Grupo": "VIAGENS E REPRESENTACOES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202110001", "Conta Contabil": "BAIXA DE ATIVOS OBSOLETOS", "Conta Gerencial": "BAIXA DE ATIVOS OBSOLETOS", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202110002", "Conta Contabil": "BAIXA VENDA ATIVO IMOBILIZADO", "Conta Gerencial": "BAIXA VENDA ATIVO IMOBILIZADO", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202110003", "Conta Contabil": "OUTRAS DESPESAS NAO OPERACIONAIS", "Conta Gerencial": "OUTRAS DESPESAS NAO OPERACIONAIS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40202120001", "Conta Contabil": "DEPRECIACAO", "Conta Gerencial": "DEPRECIACAO", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40202120002", "Conta Contabil": "AMORTIZACAO", "Conta Gerencial": "AMORTIZACAO", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40202120003", "Conta Contabil": "DEPRECIACAO ARRENDAMENTO IFRS16", "Conta Gerencial": "DEPRECIACAO ARRENDAMENTO IFRS16", "Sub Grupo": "DESPESAS COM ATIVO FIXO", "Grupo": "DEPRECIACAO E AMORTIZACAO"}, {"Cod Conta": "40203010001", "Conta Contabil": "PROVISAO PARA DEVEDORES DUVIDOSOS", "Conta Gerencial": "PROVISAO PARA DEVEDORES DUVIDOSOS", "Sub Grupo": "OUTROS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40203010002", "Conta Contabil": "PUBLICACOES", "Conta Gerencial": "PUBLICACOES", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40203010003", "Conta Contabil": "COMISSOES SOBRE VENDAS", "Conta Gerencial": "COMISSOES SOBRE VENDAS", "Sub Grupo": "BONUS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40203010004", "Conta Contabil": "PERDAS E CREDITOS INCOBRAVEIS", "Conta Gerencial": "PERDAS E CREDITOS INCOBRAVEIS", "Sub Grupo": "PROVISAO PARA PERDAS DE CLIENTES", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40203010005", "Conta Contabil": "DOACOES E DONATIVOS", "Conta Gerencial": "DOACOES E DONATIVOS", "Sub Grupo": "DESPESAS GERAIS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40203010006", "Conta Contabil": "PUBLICIDADE E PROPAGANDA", "Conta Gerencial": "PUBLICIDADE E PROPAGANDA", "Sub Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS", "Grupo": "SERVICOS PROFISSIONAIS E CONTRATADOS"}, {"Cod Conta": "40204010001", "Conta Contabil": "DESPESA COM CONTIGENCIAS TRABALHISTA", "Conta Gerencial": "DESPESA COM CONTIGENCIAS TRABALHISTA", "Sub Grupo": "ACORDOS E CONTINGENCIAS", "Grupo": "CUSTO DE PESSOAL"}, {"Cod Conta": "40204010002", "Conta Contabil": "DESPESA COM CONTINGENCIAS TRIBUTARIA", "Conta Gerencial": "DESPESA COM CONTINGENCIAS TRIBUTARIA", "Sub Grupo": "ACORDOS E CONTINGENCIAS", "Grupo": "OUTRAS DESPESAS"}, {"Cod Conta": "40204010003", "Conta Contabil": "DESPESA COM CONTINGENCIAS CIVEL", "Conta Gerencial": "DESPESA COM CONTINGENCIAS CIVEL", "Sub Grupo": "ACORDOS E CONTINGENCIAS", "Grupo": "CUSTO DE PESSOAL"}];
+const CC_BASE=[{"Centro": "01010000000", "Descrição Gerencial": "DIRETORIA"}, {"Centro": "01020020001", "Descrição Gerencial": "FINANCEIRO"}, {"Centro": "01020020002", "Descrição Gerencial": "TESOURARIA"}, {"Centro": "01020020003", "Descrição Gerencial": "CONTAS A PAGAR"}, {"Centro": "01020020004", "Descrição Gerencial": "CONTAS A RECEBER"}, {"Centro": "01020020005", "Descrição Gerencial": "FINANCEIRO CRI"}, {"Centro": "01020030001", "Descrição Gerencial": "CONTABIL / FISCAL"}, {"Centro": "01020030005", "Descrição Gerencial": "CONTABIL"}, {"Centro": "01020030006", "Descrição Gerencial": "RECEBIMENTO E CENTRALIZACAO"}, {"Centro": "01020040001", "Descrição Gerencial": "CONTROLADORIA"}, {"Centro": "01020050001", "Descrição Gerencial": "JURIDICO"}, {"Centro": "01020060001", "Descrição Gerencial": "COMPRAS E SUPRIMENTOS"}, {"Centro": "01020070001", "Descrição Gerencial": "ADMINISTRATIVO"}, {"Centro": "01020070014", "Descrição Gerencial": "FACILITIES"}, {"Centro": "01020070015", "Descrição Gerencial": "FATURAMENTO"}, {"Centro": "01020070016", "Descrição Gerencial": "FACILITIES MM"}, {"Centro": "01020070032", "Descrição Gerencial": "CADASTRO"}, {"Centro": "01020070034", "Descrição Gerencial": "CONTROLES INTERNOS"}, {"Centro": "01030080001", "Descrição Gerencial": "COMERCIAL"}, {"Centro": "01030080016", "Descrição Gerencial": "ADM VENDAS"}, {"Centro": "01030080017", "Descrição Gerencial": "MARKETING"}, {"Centro": "01040090018", "Descrição Gerencial": "TI - SISTEMAS"}, {"Centro": "01040090019", "Descrição Gerencial": "TI - INFRAESTRUTURA"}, {"Centro": "01050100020", "Descrição Gerencial": "QUALIDADE"}, {"Centro": "01050100021", "Descrição Gerencial": "MEIO AMBIENTE"}, {"Centro": "01050100022", "Descrição Gerencial": "SAUDE E SEGURANCA DO TRABALHO"}, {"Centro": "01050100023", "Descrição Gerencial": "ASSUNTOS REGULATORIOS"}, {"Centro": "01060110023", "Descrição Gerencial": "RECURSOS HUMANOS"}, {"Centro": "01060110025", "Descrição Gerencial": "PLANEJAMENTO ESTRATEGICO BD"}, {"Centro": "01060110026", "Descrição Gerencial": "STRATEGIC SOURCING"}, {"Centro": "01060110027", "Descrição Gerencial": "DEPARTAMENTO PESSOAL"}, {"Centro": "01060110028", "Descrição Gerencial": "PROJETO SPAC"}, {"Centro": "01060110029", "Descrição Gerencial": "FISCAL"}, {"Centro": "01060110030", "Descrição Gerencial": "CONTAS A PAGAR"}, {"Centro": "01080010000", "Descrição Gerencial": "HOLDING"}, {"Centro": "01080010001", "Descrição Gerencial": "M&A - INTEGRACOES"}, {"Centro": "01080010002", "Descrição Gerencial": "PROJETO LATAM"}, {"Centro": "02000130001", "Descrição Gerencial": "TRANSPORTE NACIONAL"}, {"Centro": "02000130002", "Descrição Gerencial": "REGIONAL COE"}, {"Centro": "02000130003", "Descrição Gerencial": "REGIONAL PRI"}, {"Centro": "02000130004", "Descrição Gerencial": "REGIONAL SPI"}, {"Centro": "02000130005", "Descrição Gerencial": "REGIONAL GSP"}, {"Centro": "02000130006", "Descrição Gerencial": "REGIONAL NONE"}, {"Centro": "02000130007", "Descrição Gerencial": "REGIONAL SUL"}, {"Centro": "02000130008", "Descrição Gerencial": "REGIONAL LESTE"}, {"Centro": "02000130009", "Descrição Gerencial": "REGIONAL ARMAZENS E SEEDS"}, {"Centro": "02070390013", "Descrição Gerencial": "ADMINISTRACAO DE OPERACOES"}, {"Centro": "02070390014", "Descrição Gerencial": "ADMINISTRACAO DE CONTAINERS"}, {"Centro": "02070390015", "Descrição Gerencial": "FATURAMENTO"}, {"Centro": "02070390018", "Descrição Gerencial": "TI - SISTEMAS"}, {"Centro": "02070390019", "Descrição Gerencial": "TI - INFRAESTRUTURA"}, {"Centro": "02070390020", "Descrição Gerencial": "QUALIDADE"}, {"Centro": "02070390021", "Descrição Gerencial": "MEIO AMBIENTE"}, {"Centro": "02070390022", "Descrição Gerencial": "SAUDE E SEGURANCA DO TRABALHO"}, {"Centro": "02070390023", "Descrição Gerencial": "RECURSOS HUMANOS"}, {"Centro": "02070390024", "Descrição Gerencial": "ASSUNTOS REGULATORIOS"}, {"Centro": "02070400014", "Descrição Gerencial": "FACILITIES"}, {"Centro": "02070400015", "Descrição Gerencial": "ADMINISTRACAO DE TRANSPORTES"}, {"Centro": "02070400016", "Descrição Gerencial": "FACILITIES MM"}, {"Centro": "02070400017", "Descrição Gerencial": "MANUTENCAO DE FROTA"}, {"Centro": "02070400025", "Descrição Gerencial": "ADMINISTRACAO DE ARMAZENS"}, {"Centro": "02070410026", "Descrição Gerencial": "OPERACOES"}, {"Centro": "02070410027", "Descrição Gerencial": "TRANSPORTES"}, {"Centro": "02070410028", "Descrição Gerencial": "CONTAINERS OPERACOES"}, {"Centro": "02070410029", "Descrição Gerencial": "JURIDICO"}, {"Centro": "02070410031", "Descrição Gerencial": "CONTROLADORIA RO"}, {"Centro": "02070410032", "Descrição Gerencial": "FINANCEIRO RO"}, {"Centro": "02070410033", "Descrição Gerencial": "COMERCIAL RO"}, {"Centro": "02070410034", "Descrição Gerencial": "COMPRAS E SUPRIMENTOS RO"}, {"Centro": "02070410035", "Descrição Gerencial": "CONTROL TOWER"}, {"Centro": "02071180027", "Descrição Gerencial": "TRANSP. DISTRIBUICAO"}, {"Centro": "02071180028", "Descrição Gerencial": "TRANSP. SUPERCONGELADO"}, {"Centro": "02071180029", "Descrição Gerencial": "TRANSP. CATERING"}, {"Centro": "02071180030", "Descrição Gerencial": "TRANSP. PRIMARIA"}, {"Centro": "02071180031", "Descrição Gerencial": "TRANSP. DEDICADO"}, {"Centro": "0207CVD2013", "Descrição Gerencial": "ADMINISTRACAO DE OPERACOES CVD2"}, {"Centro": "0207CVD2018", "Descrição Gerencial": "TI - SISTEMAS CVD2"}, {"Centro": "0207CVD2019", "Descrição Gerencial": "TI - INFRAESTRUTURA CVD2"}, {"Centro": "0207CVD2020", "Descrição Gerencial": "QUALIDADE E MEIO AMBIENTE CVD2"}, {"Centro": "0207CVD2021", "Descrição Gerencial": "SEGURANCA E SAUDE DO TRABALHO CVD2"}, {"Centro": "0207CVD2023", "Descrição Gerencial": "RECURSOS HUMANOS CVD2"}, {"Centro": "0207CVD2025", "Descrição Gerencial": "ADMINISTRACAO DE ARMAZENS CVD2"}, {"Centro": "0207CVD2026", "Descrição Gerencial": "OPERACOES CVD2"}, {"Centro": "02090390010", "Descrição Gerencial": "REGIONAL PERDAS E AVARIAS"}, {"Centro": "02090390013", "Descrição Gerencial": "OPERACOES REGIONAL"}, {"Centro": "02090390018", "Descrição Gerencial": "TI - INFRAESTRUTURA REGIONAL"}, {"Centro": "02090390019", "Descrição Gerencial": "TI - SISTEMAS REGIONAL"}, {"Centro": "02090390020", "Descrição Gerencial": "QUALIDADE REGIONAL"}, {"Centro": "02090390023", "Descrição Gerencial": "RECURSOS HUMANOS REGIONAL"}, {"Centro": "02090400015", "Descrição Gerencial": "TRANSPORTES REGIONAL"}, {"Centro": "02090400016", "Descrição Gerencial": "FACILITIES MM REGIONAL"}, {"Centro": "02090400017", "Descrição Gerencial": "MANUTENCAO DE FROTA REGIONAL"}, {"Centro": "02090400026", "Descrição Gerencial": "PROJETO GOLDEN"}, {"Centro": "02090400027", "Descrição Gerencial": "SINISTRO POA PRE PERDAS"}, {"Centro": "02090400028", "Descrição Gerencial": "SINISTRO POA PERDAS"}, {"Centro": "02090400029", "Descrição Gerencial": "SINISTRO POAII PRE PERDAS"}, {"Centro": "02090400030", "Descrição Gerencial": "SINISTRO POAII PERDAS"}, {"Centro": "02090400031", "Descrição Gerencial": "SINISTRO ITA ROUBO CABOS E TOMADAS"}, {"Centro": "02090400032", "Descrição Gerencial": "PERDAS E AVARIAS"}, {"Centro": "02180410028", "Descrição Gerencial": "REGULATORIOS"}, {"Centro": "02180410029", "Descrição Gerencial": "REGIONAL MANUTENCAO"}, {"Centro": "02180410030", "Descrição Gerencial": "REGIONAL SAUDE E SEGURANCA"}, {"Centro": "02180410031", "Descrição Gerencial": "ARMAZEM TAC"}, {"Centro": "03080500027", "Descrição Gerencial": "ORGANICO PROJETOS E OBRAS"}, {"Centro": "03080500028", "Descrição Gerencial": "ORGANICO PROJETOS TI"}, {"Centro": "03080500029", "Descrição Gerencial": "ORGANICO PROJETOS RETROFIT"}, {"Centro": "03100510028", "Descrição Gerencial": "MANUTENCAO E MODERNIZACAO"}, {"Centro": "03100510029", "Descrição Gerencial": "EFICIENCIA MM"}, {"Centro": "03100510033", "Descrição Gerencial": "EFICIENCIA TI E PROCESSOS"}, {"Centro": "03100510035", "Descrição Gerencial": "EFICIENCIA RECURSOS HUMANOS"}, {"Centro": "03100510039", "Descrição Gerencial": "CAPEX TMS"}, {"Centro": "03100510040", "Descrição Gerencial": "PROJETO CSC"}, {"Centro": "03100510043", "Descrição Gerencial": "CAPEX FROTA"}, {"Centro": "03100510044", "Descrição Gerencial": "YELLOW STONE"}, {"Centro": "03100510045", "Descrição Gerencial": "PROJETO OFICINA PROPRIA"}, {"Centro": "03100510046", "Descrição Gerencial": "CAPEX E MELHORIAS"}, {"Centro": "03100510047", "Descrição Gerencial": "CD RMSPI IV SODEX"}, {"Centro": "03100510048", "Descrição Gerencial": "CAPEX FACILITIES, LIMPEZA - INTERNO"}, {"Centro": "03100510049", "Descrição Gerencial": "EQUIPAMENTO TECNOLOGIA E MELHORIAS"}, {"Centro": "03100510050", "Descrição Gerencial": "DESMOBILIZAÇÃO DA RP4"}, {"Centro": "03100510051", "Descrição Gerencial": "ETAPA 8"}, {"Centro": "04110990099", "Descrição Gerencial": "NAO RECORRENTES"}, {"Centro": "90000000001", "Descrição Gerencial": "OPERACOES LOGFRIO"}, {"Centro": "90000000002", "Descrição Gerencial": "G&A LOGFRIO"}, {"Centro": "99999999994", "Descrição Gerencial": "RECURSOS HUMANOS"}, {"Centro": "99999999995", "Descrição Gerencial": "ADMINISTRACAO DE ARMAZENS"}, {"Centro": "99999999996", "Descrição Gerencial": "TECNOLOGIA DA INFORMACAO"}, {"Centro": "99999999997", "Descrição Gerencial": "FACILITES E MANUTENCAO"}, {"Centro": "99999999998", "Descrição Gerencial": "QSSMA"}, {"Centro": "99999999999", "Descrição Gerencial": "ADMINISTRACAO OPERACIONAL"}];
+
+const DEPARA_CC=[{"filDE": "004003", "ccDE": "02070400015", "filPARA": "004001", "nomePARA": "MAQ TRANSP"}];
+const DEPARA_AG=[{"conta": "ASSISTENCIA MEDICA", "filNF": "001003", "filiais": ["001003", "001005"]}, {"conta": "ASSISTENCIA MEDICA", "filNF": "001025", "filiais": ["001025", "001029"]}, {"conta": "ASSISTENCIA MEDICA", "filNF": "008001", "filiais": ["008001", "008005"]}, {"conta": "ASSISTENCIA MEDICA", "filNF": "010001", "filiais": ["010001", "010002"]}];
+
+const filialByKey={};
+FILIAIS.forEach(r=>{
+  const key=String(r.CODCOLIGADA)+String(r.CODFILIAL);
+  filialByKey[key]={cod:String(r["Código Filial"]),nome:r["Nome Filial"]};
+});
+
+const filialByCod={};
+FILIAIS.forEach(r=>{
+  filialByCod[String(r["Código Filial"])]=r["Nome Filial"];
+});
+
+const ccDescMap={};
+CC_BASE.forEach(r=>{ ccDescMap[String(r.Centro).trim()]=r["Descrição Gerencial"]; });
+
+const m4010={},m4020={};
+CONTAS.forEach(r=>{
+  const cod=String(r["Cod Conta"]);
+  const ger=String(r["Conta Gerencial"]||"").trim().toUpperCase();
+  if(cod.startsWith("4010")) m4010[ger]=r;
+  if(cod.startsWith("4020")) m4020[ger]=r;
+});
+
+const parsed={};
+let outputRows=[];
+
+function getMmAaaa(){
+  const v=document.getElementById("p-data").value;
+  if(!v) return "MM/AAAA";
+  const d=new Date(v+"T12:00:00");
+  return String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();
+}
+function getAno(){
+  const v=document.getElementById("p-data").value;
+  if(!v) return "";
+  return String(new Date(v+"T12:00:00").getFullYear());
+}
+function updatePreview(){
+  document.getElementById("tipo-preview").textContent="RATEIO [conta gerencial da linha] "+getMmAaaa();
+}
+function pad6(v){ return String(v||"").replace(/\D/g,"").padStart(6,"0"); }
+function padCC(v){ return String(v||"").replace(/\./g,"").padStart(11,"0"); }
+function normCC(v){ return String(v||"").replace(/[.]/g,"").replace(/-/g,"").padStart(11,"0"); }
+function normCPF(v){ return String(v||"").replace(/[^0-9]/g,"").padStart(11,"0"); }
+function normChapa(v){ return String(v||"").replace(/[^0-9]/g,"").padStart(10,"0"); }
+function applyDeparaCC(filCod, cc){
+  const rule=DEPARA_CC.find(r=>r.filDE===filCod && r.ccDE===cc);
+  if(rule) return {filCod:rule.filPARA, filNome:rule.nomePARA};
+  return null;
+}
+function getFiliais(cger, codFilNF){
+  const key=cger.trim().toUpperCase();
+  const rule=DEPARA_AG.find(r=>r.conta===key && r.filNF===codFilNF);
+  return rule?rule.filiais:[codFilNF];
+}
+function normNome(v){ return String(v||"").trim().toUpperCase().replace(/\s+/g," "); }
+function toN(v){ if(typeof v==="number") return v; const n=parseFloat(String(v||"").replace(/\./g,"").replace(",",".")); return isNaN(n)?0:n; }
+function fv(v){ return v instanceof Date?v.toLocaleDateString("pt-BR"):(v==null?"":v); }
+
+["nf","ben"].forEach(k=>{
+  document.getElementById("f-"+k).addEventListener("change",async function(){
+    const f=this.files[0]; if(!f) return;
+    document.getElementById("fn-"+k).textContent=f.name;
+    parsed[k]=await readFile(f);
+    renderMap(k,parsed[k].cols);
+    checkReady();
+  });
+});
+
+document.getElementById("f-b1").addEventListener("change",async function(){
+  const files=Array.from(this.files); if(!files.length) return;
+  document.getElementById("fn-b1").textContent=files.length+" arquivo(s)";
+  const allRows=[];
+  for(const f of files){ const d=await readFile(f); allRows.push(...d.rows); }
+  // Dedup por CPF (normalizado 11 dígitos) — sem critério de mês
+  const seen=new Set();
+  const deduped=allRows.filter(r=>{
+    const cpf=normCPF(r["CPF"]||r["cpf"]||"");
+    if(!cpf||seen.has(cpf)) return false;
+    seen.add(cpf); return true;
+  });
+  parsed["b1"]={rows:deduped,cols:deduped.length?Object.keys(deduped[0]):[]};
+  checkReady();
+});
+
+document.getElementById("f-b2").addEventListener("change",async function(){
+  const files=Array.from(this.files); if(!files.length) return;
+  document.getElementById("fn-b2").textContent=files.length+" arquivo(s)";
+  const allRows=[];
+  for(const f of files){ const d=await readFile(f); allRows.push(...d.rows); }
+  const chapMap={};
+  allRows.forEach(r=>{
+    const chap=normChapa(r["CODCHAPA"]||"");
+    if(!chap) return;
+    const score=Number(r["ANOCOMP"]||0)*100+Number(r["MESCOMP"]||0);
+    if(!chapMap[chap]||score>chapMap[chap].score) chapMap[chap]={row:r,score};
+  });
+  const deduped=Object.values(chapMap).map(x=>x.row);
+  parsed["b2"]={rows:deduped,cols:deduped.length?Object.keys(deduped[0]):[]};
+  checkReady();
+});
+
+document.getElementById("f-dp").addEventListener("change",async function(){
+  const f=this.files[0]; if(!f) return;
+  document.getElementById("fn-dp").textContent=f.name;
+  const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});
+  // Ler DePara_Filial_CC
+  const ws1=wb.Sheets["DePara_Filial_CC"];
+  if(ws1){
+    const rows1=XLSX.utils.sheet_to_json(ws1,{defval:""});
+    DEPARA_CC.length=0;
+    rows1.forEach(r=>{
+      const fDE=String(r["Cod Filial DE"]||"").replace(/[^0-9]/g,"").padStart(6,"0");
+      const ccDE=String(r["Cod CC DE"]||"").replace(/[^0-9]/g,"").padStart(11,"0");
+      const fPARA=String(r["Cod Filial PARA"]||"").replace(/[^0-9]/g,"").padStart(6,"0");
+      const nPARA=String(r["Nome Filial PARA"]||"").trim();
+      if(fDE&&ccDE&&fPARA) DEPARA_CC.push({filDE:fDE,ccDE:ccDE,filPARA:fPARA,nomePARA:nPARA});
+    });
+  }
+  // Ler DePara_Filiais_Agrupadas
+  const ws2=wb.Sheets["DePara_Filiais_Agrupadas"];
+  if(ws2){
+    const rows2=XLSX.utils.sheet_to_json(ws2,{defval:""});
+    DEPARA_AG.length=0;
+    rows2.forEach(r=>{
+      const conta=String(r["Conta Gerencial"]||"").trim().toUpperCase();
+      const filNF=String(r["Cod Filial NF"]||"").replace(/[^0-9]/g,"").padStart(6,"0");
+      const filiais=String(r["Cod Filiais para Ratear"]||"").split(",").map(f=>f.trim().replace(/[^0-9]/g,"").padStart(6,"0")).filter(f=>f!=="000000");
+      if(conta&&filNF&&filiais.length) DEPARA_AG.push({conta,filNF,filiais});
+    });
+  }
+  parsed["dp"]=true;
+  checkReady();
+});
+
+function checkReady(){
+  document.getElementById("btn-run").disabled=!(["nf","ben","b1","b2","dp"].every(x=>parsed[x]));
+}
+
+function readFile(f){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const wb=XLSX.read(e.target.result,{type:"binary",raw:false,cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:""});
+      res({rows,cols:rows.length?Object.keys(rows[0]):[]});
+    };
+    r.readAsBinaryString(f);
+  });
+}
+
+const DEFS={
+  nf:[
+    {id:"nf-hist",  label:"Histórico",               h:["historico","histórico","hist"]},
+    {id:"nf-cger",  label:"Desc. Conta Gerencial",    h:["conta gerencial","descricao da conta","descrição da conta"]},
+    {id:"nf-doc",   label:"Documento/Nº NF",          h:["documento","número","numero","doc"]},
+    {id:"nf-val",   label:"Valor",                    h:["valor"]},
+    {id:"nf-cc",    label:"Código Centro de Custo",   h:["código centro","centro de custo","codigo centro","cc"]},
+    {id:"nf-sc",    label:"SC/Número",                h:["sc/número","sc/numero"]},
+    {id:"nf-pc",    label:"PC/Número",                h:["pc/número","pc/numero"]},
+    {id:"nf-clifor",label:"Cli/For",                  h:["cli/for","clifor"]},
+    {id:"nf-nfant", label:"Nome Fantasia",            h:["nome fantasia","fantasia"]},
+    {id:"nf-codfil",label:"Código Filial",            h:["código filial","codigo filial","filial"]},
+  ],
+  ben:[
+    {id:"b-cpf",label:"CPF",             h:["cpf"]},
+    {id:"b-nom",label:"Nome Colaborador",h:["colaborador","nome"]},
+    {id:"b-val",label:"Valor",           h:["valor creditado","valor","beneficio","benefício"]},
+  ],
+  b1:[],
+  b2:[]
+};
+
+function best(cols,hints){
+  for(const h of hints){ const f=cols.find(c=>String(c).toLowerCase().includes(h)); if(f) return f; }
+  return cols[0]||"";
+}
+
+function renderMap(key,cols){
+  const sm={nf:"sec-map",ben:"sec-map-ben",b1:"sec-map-b1",b2:"sec-map-b2"};
+  const cm={nf:"map-nf",ben:"map-ben",b1:"map-b1",b2:"map-b2"};
+  document.getElementById(sm[key]).classList.remove("hidden");
+  const cont=document.getElementById(cm[key]); cont.innerHTML="";
+  DEFS[key].forEach(d=>{
+    const w=document.createElement("div");
+    const l=document.createElement("label"); l.textContent=d.label; l.htmlFor=d.id;
+    const s=document.createElement("select"); s.id=d.id;
+    const n=document.createElement("option"); n.value=""; n.textContent="— não usar —"; s.appendChild(n);
+    cols.forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; s.appendChild(o); });
+    s.value=best(cols,d.h);
+    w.appendChild(l); w.appendChild(s); cont.appendChild(w);
+  });
+}
+
+function gm(key){ const r={}; DEFS[key].forEach(d=>{ const el=document.getElementById(d.id); r[d.id]=el?el.value:""; }); return r; }
+
+function runRateio(){
+  try{
+    const mn=gm("nf"),mb=gm("ben");
+    const dp=document.getElementById("p-data").value;
+    const mmaaaa=getMmAaaa();
+    const ano=getAno();
+    const dataFmt=dp?new Date(dp+"T12:00:00").toLocaleDateString("pt-BR"):"";
+    const sol=document.getElementById("p-sol").value||"";
+
+    // Passo 1: Base sem CPF -> enriquecer com Código Filial e Nome Filial
+    const chapInfo={};      // CODCHAPA -> {cc, descCC, codFilial, nomeFilial}
+    const nomeInfoB2={};    // NOMEEMPREGADO normalizado -> mesma estrutura
+    parsed.b2.rows.forEach(r=>{
+      const chap=normChapa(r["CODCHAPA"]||"");
+      const cc=normCC(r["CODCENTROCUSTO"]||"");
+      const colig=String(r["CODCOLIGADA"]||"").trim();
+      const fil=String(r["CODFILIAL"]||"").trim();
+      const nomeEmp=normNome(r["NOMEEMPREGADO"]||"");
+      const score=Number(r["ANOCOMP"]||0)*100+Number(r["MESCOMP"]||0);
+      if(!chap) return;
+      const fKey=colig+fil;
+      const fData=filialByKey[fKey]||{};
+      const descCC=ccDescMap[cc]||"";
+      const entry={cc, descCC, codFilial:String(fData.cod||""), nomeFilial:fData.nome||"", score};
+      if(!chapInfo[chap]||score>chapInfo[chap].score) chapInfo[chap]=entry;
+      if(nomeEmp&&(!nomeInfoB2[nomeEmp]||score>nomeInfoB2[nomeEmp].score)) nomeInfoB2[nomeEmp]=entry;
+    });
+
+    // Passo 2: Base com CPF x Base sem CPF -> base consolidada
+    // Chave: Chapa = CODCHAPA, fallback: Nome do Funcionário = NOMEEMPREGADO
+    const cpfInfo={};       // CPF -> {chapa, cc, descCC, codFilial, nomeFilial, nome}
+    const b1SemMatch=[];    // Base com CPF sem match na Base sem CPF
+    parsed.b1.rows.forEach(r=>{
+      const cpf=normCPF(r["CPF"]||r["cpf"]||"");
+      const chap=normChapa(r["Chapa"]||r["CHAPA"]||r["chapa"]||"");
+      const nome=normNome(r["Nome do Funcionário"]||"");
+      if(!cpf) return;
+      let info=chapInfo[chap]||null;
+      if(!info) info=nomeInfoB2[nome]||null;
+      if(info){
+        cpfInfo[cpf]={chap, cc:info.cc, descCC:info.descCC, codFilial:info.codFilial, nomeFilial:info.nomeFilial, nome};
+      } else {
+        b1SemMatch.push({cpf, chap, nome});
+      }
+    });
+
+    // Passo 3: Benefícios x base consolidada pelo CPF
+    const semCC=[];
+    const colabs=[];
+    parsed.ben.rows.forEach(r=>{
+      const cpf=normCPF(r[mb["b-cpf"]]||"");
+      const val=toN(r[mb["b-val"]]);
+      const nomeColab=normNome(r[mb["b-nom"]]||"");
+      if(!cpf||!val) return;
+      let info=cpfInfo[cpf]||null;
+      // fallback: busca pelo nome do colaborador no índice da Base sem CPF
+      if(!info){
+        const infoB2=nomeInfoB2[nomeColab]||null;
+        if(infoB2) info={chap:"", cc:infoB2.cc, descCC:infoB2.descCC, codFilial:infoB2.codFilial, nomeFilial:infoB2.nomeFilial, nome:nomeColab};
+      }
+      if(!info||!info.cc){ semCC.push({cpf, nome:nomeColab}); return; }
+      colabs.push({cpf, chap:info.chap, cc:info.cc, codFilial:info.codFilial, nomeFilial:info.nomeFilial, val});
+    });
+
+    // Filtrar NF (remover eventos)
+    const nfF=parsed.nf.rows.filter(r=>!/^\d/.test(String(r[mn["nf-hist"]]||"").trim()));
+
+    const out=[];
+
+    nfF.forEach(orig=>{
+      const hist   =String(orig[mn["nf-hist"]]||"").trim();
+      const valOrig=toN(orig[mn["nf-val"]]);
+      const ccOrig =padCC(orig[mn["nf-cc"]]);
+      const cger   =mn["nf-cger"]?String(orig[mn["nf-cger"]]||"").trim():"";
+      const tipo   ="RATEIO "+cger+" "+mmaaaa;
+      const sc     =mn["nf-sc"]    ?orig[mn["nf-sc"]]    ||"":"";
+      const pc     =mn["nf-pc"]    ?orig[mn["nf-pc"]]    ||"":"";
+      const clifor =mn["nf-clifor"]?orig[mn["nf-clifor"]]||"":"";
+      const nfant  =mn["nf-nfant"] ?orig[mn["nf-nfant"]] ||"":"";
+      const docNum =mn["nf-doc"]   ?orig[mn["nf-doc"]]   ||"":"";
+
+      // Filial da NF (6 dígitos)
+      const codFilNF=pad6(orig[mn["nf-codfil"]]||"");
+      const nomeFilNF=filialByCod[String(parseInt(codFilNF,10))]||"";
+
+      // Conta contábil para EST (baseada no CC original da NF)
+      const ccPrefixOrig=ccOrig.substring(0,2);
+      const contaMapOrig=(ccPrefixOrig==="01")?m4020:m4010;
+      const cgerKey=cger.trim().toUpperCase();
+      const contaOrig=contaMapOrig[cgerKey]||{};
+
+      // --- ESTORNO ---
+      const est={};
+      est["Tipo Lçmnto"]                   =tipo;
+      est["Id_Recno"]                      ="";
+      est["Status"]                        ="REAL "+ano;
+      est["Código Filial"]                 =codFilNF;
+      est["Nome Filial"]                   =nomeFilNF;
+      est["Grupo"]                         =contaOrig["Grupo"]         ||"";
+      est["Sub Grupo"]                     =contaOrig["Sub Grupo"]     ||"";
+      est["Código Conta Contábil"]         =contaOrig["Cod Conta"]     ||"";
+      est["Descrição da Conta Contábil"]   =contaOrig["Conta Contabil"]||"";
+      est["Descrição da Conta Gerencial"]  =cger;
+      est["Código Centro de Custo"]        =ccOrig;
+      est["Descrição Centro de Custo Contábil"]=ccDescMap[ccOrig]||"";
+      est["Centro de Custo Gerencial"]     =ccDescMap[ccOrig]||"";
+      est["Mês"]                           =mmaaaa;
+      est["Data"]                          =dataFmt;
+      est["Valor"]                         =-(valOrig);
+      est["Histórico"]                     ="EST "+hist;
+      est["Documento/Número"]              =docNum;
+      est["PC/Observação"]                 ="";
+      est["Cli/For"]                       =clifor;
+      est["Nome Fantasia"]                 =nfant;
+      est["SC/Número"]                     =sc;
+      est["PC/Número"]                     =pc;
+      est["PC/Item"]                       ="";
+      est["Solicitante"]                   =sol;
+      est.$TAG="EST";
+      out.push(est);
+
+      // Passo 4: filtrar pela(s) filial(is) — suporta agrupamento via DEPARA_AG
+      const codFilNFNorm=String(parseInt(codFilNF,10));
+      const filiaisRateio=getFiliais(cger,codFilNF);
+      const filiaisNorm=filiaisRateio.map(f=>String(parseInt(f,10)));
+      const colabsFil=colabs.filter(c=>filiaisNorm.includes(String(parseInt(String(c.codFilial||"0"),10))));
+      const totalPeso=colabsFil.reduce((s,c)=>s+c.val,0);
+
+      if(colabsFil.length===0){
+        out.push({...est, "Histórico":"RAT "+hist, "Valor":valOrig, "Código Centro de Custo":ccOrig, $TAG:"RAT_VAZIO"});
+        return;
+      }
+
+      // Agrupar por CC mantendo filial (todos da mesma filial da NF)
+      const ccPeso={};
+      const ccFilial={};
+      colabsFil.forEach(c=>{
+        ccPeso[c.cc]=(ccPeso[c.cc]||0)+c.val;
+        ccFilial[c.cc]={codFilial:c.codFilial, nomeFilial:c.nomeFilial};
+      });
+      const ccList=Object.keys(ccPeso);
+
+      // Passo 5: uma linha RAT por CC
+      let soma=0;
+      ccList.forEach((cc,i)=>{
+        let vr;
+        if(i===ccList.length-1){
+          vr=parseFloat((valOrig-soma).toFixed(2));
+        } else {
+          vr=parseFloat((valOrig*(ccPeso[cc]/totalPeso)).toFixed(2));
+          soma+=vr;
+        }
+
+        const filCodRaw=pad6(ccFilial[cc].codFilial);
+        const filNomeRaw=ccFilial[cc].nomeFilial||filialByCod[String(parseInt(String(ccFilial[cc].codFilial||"0"),10))]||"";
+        const depCC=applyDeparaCC(filCodRaw,cc);
+        const filCod=depCC?depCC.filCod:filCodRaw;
+        const filNome=depCC?depCC.filNome:filNomeRaw;
+
+        const ccPrefixDest=cc.substring(0,2);
+        const contaMapDest=(ccPrefixDest==="01")?m4020:m4010;
+        const contaDest=contaMapDest[cgerKey]||{};
+
+        const rat={};
+        rat["Tipo Lçmnto"]                   =tipo;
+        rat["Id_Recno"]                      ="";
+        rat["Status"]                        ="REAL "+ano;
+        rat["Código Filial"]                 =filCod;
+        rat["Nome Filial"]                   =filNome;
+        rat["Grupo"]                         =contaDest["Grupo"]         ||"";
+        rat["Sub Grupo"]                     =contaDest["Sub Grupo"]     ||"";
+        rat["Código Conta Contábil"]         =contaDest["Cod Conta"]     ||"";
+        rat["Descrição da Conta Contábil"]   =contaDest["Conta Contabil"]||"";
+        rat["Descrição da Conta Gerencial"]  =cger;
+        rat["Código Centro de Custo"]        =cc;
+        rat["Descrição Centro de Custo Contábil"]=ccDescMap[cc]||"";
+        rat["Centro de Custo Gerencial"]     =ccDescMap[cc]||"";
+        rat["Mês"]                           =mmaaaa;
+        rat["Data"]                          =dataFmt;
+        rat["Valor"]                         =vr;
+        rat["Histórico"]                     ="RAT "+hist;
+        rat["Documento/Número"]              =docNum;
+        rat["PC/Observação"]                 ="";
+        rat["Cli/For"]                       =clifor;
+        rat["Nome Fantasia"]                 =nfant;
+        rat["SC/Número"]                     =sc;
+        rat["PC/Número"]                     =pc;
+        rat["PC/Item"]                       ="";
+        rat["Solicitante"]                   =sol;
+        rat.$TAG="RAT";
+        out.push(rat);
+      });
+    });
+
+    // Dedup semCC
+    const semCCUniq=[...new Set(semCC)];
+    outputRows=out;
+    showResult(out,semCCUniq,nfF.length);
+  } catch(e){ alert("Erro: "+e.message); console.error(e); }
+}
+
+function showResult(rows,semCC,nfCount){
+  const est=rows.filter(r=>r.$TAG==="EST");
+  const rat=rows.filter(r=>r.$TAG==="RAT");
+  const saldo=parseFloat((
+    est.reduce((s,r)=>s+toN(r["Valor"]),0)+
+    rat.reduce((s,r)=>s+toN(r["Valor"]),0)
+  ).toFixed(2));
+
+  document.getElementById("metrics").innerHTML=`
+    <div class="metric"><div class="lb">Linhas NF rateadas</div><div class="vl">${nfCount}</div></div>
+    <div class="metric"><div class="lb">Linhas EST</div><div class="vl">${est.length}</div></div>
+    <div class="metric"><div class="lb">Linhas RAT</div><div class="vl">${rat.length}</div></div>
+    <div class="metric"><div class="lb">Saldo EST+RAT</div><div class="vl" style="color:${Math.abs(saldo)<0.02?"#16a34a":"#dc2626"}">${saldo.toLocaleString("pt-BR",{minimumFractionDigits:2})}</div></div>`;
+
+  const al=document.getElementById("alerts-area"); al.innerHTML="";
+  if(semCC.length) al.innerHTML+=`<div class="alert aw">⚠️ ${semCC.length} CPF(s) sem CC encontrado — detalhes na aba Pendencias do Excel</div>`;
+  if(Math.abs(saldo)>0.02) al.innerHTML+=`<div class="alert ae">❌ Saldo fora de zero: ${saldo}</div>`;
+  else al.innerHTML+=`<div class="alert as">✅ Saldo zerado — rateio consistente</div>`;
+
+  buildDownload(rows,semCC,saldo,typeof b1SemMatch!=="undefined"?b1SemMatch:[]);
+
+  const PREV=["Tipo Lçmnto","Histórico","Código Filial","Código Centro de Custo","Valor","$TAG"];
+  const tbl=document.getElementById("preview-table"); tbl.innerHTML="";
+  const thead=document.createElement("thead"),hr=document.createElement("tr");
+  PREV.forEach(c=>{ const t=document.createElement("th"); t.textContent=c==="$TAG"?"Tag":c; hr.appendChild(t); });
+  thead.appendChild(hr); tbl.appendChild(thead);
+  const tbody=document.createElement("tbody");
+  rows.slice(0,300).forEach(r=>{
+    const tr=document.createElement("tr");
+    PREV.forEach(c=>{
+      const td=document.createElement("td");
+      if(c==="$TAG") td.innerHTML=r.$TAG==="EST"?'<span class="te">EST</span>':'<span class="tr2">RAT</span>';
+      else{ const v=r[c]; td.textContent=typeof v==="number"?v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}):String(v||""); }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  document.getElementById("status-msg").textContent=rows.length>300?`Prévia: 300 de ${rows.length} linhas — Excel traz todas`:`${rows.length} linhas no total`;
+  document.getElementById("result-area").classList.remove("hidden");
+}
+
+const OUTPUT_COLS=[
+  "Tipo Lçmnto","Id_Recno","Status","Código Filial","Nome Filial",
+  "Grupo","Sub Grupo","Código Conta Contábil","Descrição da Conta Contábil","Descrição da Conta Gerencial",
+  "Código Centro de Custo","Descrição Centro de Custo Contábil","Centro de Custo Gerencial",
+  "Mês","Data","Valor","Histórico","Documento/Número","PC/Observação",
+  "Cli/For","Nome Fantasia","SC/Número","PC/Número","PC/Item","Solicitante"
+];
+
+function buildDownload(rows, semCC, saldo, b1SemMatch){
+  const dl=document.getElementById("dl-area");
+  try{
+    // Aba Rateio
+    const aoa=[OUTPUT_COLS.map(String)];
+    rows.forEach(r=>{
+      aoa.push(OUTPUT_COLS.map(c=>{
+        const v=r[c];
+        if(v===undefined||v===null) return "";
+        if(typeof v==="number") return v;
+        return String(v);
+      }));
+    });
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Rateio");
+
+    // Aba Pendencias
+    const aoaPend=[["Tipo","CPF","Nome","Chapa"]];
+    if(semCC&&semCC.length){
+      semCC.forEach(p=>aoaPend.push(["Benefício sem CC",p.cpf||p,p.nome||"",""]));
+    }
+    if(b1SemMatch&&b1SemMatch.length){
+      b1SemMatch.forEach(p=>aoaPend.push(["Colaborador sem match na Folha",p.cpf||"",p.nome||"",p.chap||""]));
+    }
+    if(Math.abs(saldo||0)>0.02){
+      aoaPend.push(["Saldo fora de zero","","Saldo: "+Number(saldo).toLocaleString("pt-BR",{minimumFractionDigits:2})]);
+    }
+    if(aoaPend.length>1){
+      const wsPend=XLSX.utils.aoa_to_sheet(aoaPend);
+      XLSX.utils.book_append_sheet(wb,wsPend,"Pendencias");
+    }
+
+    XLSX.writeFile(wb,"rateio_vr.xlsx");
+    dl.innerHTML=`<div class="alert as">✅ Download iniciado — verifique sua pasta de downloads</div>`;
+  } catch(e){
+    dl.innerHTML=`<div class="alert ae">❌ Erro ao gerar arquivo: ${e.message}</div>`;
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
